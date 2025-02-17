@@ -268,11 +268,6 @@ update(){
         fi
 }
 
-test(){
-        FULL_DIR="/home/krikma19/"
-        echo 'java -jar '$FULL_DIR'\n'
-}
-
 version(){
         echo "$VERSION"
 }
