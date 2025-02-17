@@ -94,7 +94,8 @@ checkSHA256(){
 
 wgetLink(){
         local BUILD_NAME=$(buildName)
-        LINK="https://api.papermc.io/v2/projects/${PROJECT}/versions/${MINECRAFT_VERSION}/builds/$LATEST_BUILD/downloads/$BUILD_NA>        SHA256_RESULT=""
+        LINK="https://api.papermc.io/v2/projects/${PROJECT}/versions/${MINECRAFT_VERSION}/builds/$LATEST_BUILD/downloads/$BUILD_NA>"
+        SHA256_RESULT=""
         (if [ $1 != "null" ]; then
                 wget -O $1 $LINK
                 if [ $SHA256 ]; then
