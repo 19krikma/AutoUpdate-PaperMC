@@ -1,4 +1,5 @@
 #!/usr/bin/env sh
+VERSION="0.2"
 source config.ini
 
 get_opts()
@@ -56,6 +57,11 @@ buildName(){
         b=${a#'"'}
         BUILD_NAME=${b%'"'}
         echo $BUILD_NAME
+}
+
+getPID(){
+        pid=$(pgrep -f $1-$PROJECT)
+        echo $pid
 }
 
 getCheckSum(){
@@ -176,6 +182,13 @@ check(){
                 else
                         exit
                 fi
+
+        elif [ $TYPE == "experimental" ] && [ $BUILD_CHECK_EXP != "null" ]; then
+                echo "Released 'Experimental' $MINECRAFT_VERSION Build# $BUILD_CHECK_EXP"
+                echo "Running 'Experimental' $MINECRAFT_VERSION Build# $CURRENT_BUILD"
+                updateConf "LATEST_BUILD" $BUILD_CHECK_EXP
+                TEMP_BUILD=$BUILD_CHECK_EXP
+                exit
         fi)
 
 }
@@ -214,7 +227,10 @@ start(){
                 echo "-------- Starting Servers -----"
                 NAME="${SERVER[$i]}"
                 DIR="${SERVER_DIR[$i]}"
-                FULL_DIR="$DIR$NAME-$BUILD_NAME"
+                FULL="$NAME-$PROJECT-$MINECRAFT_VERSION-$CURRENT_BUILD.jar"
+                screen -dmS $NAME
+                screen -S $NAME -X stuff 'cd '$DIR'\n'
+                screen -S $NAME -X stuff 'java -jar '$FULL'\n'
         done
 }
 
@@ -238,7 +254,7 @@ update(){
                         screen -S $NAME -X stuff 'say SERVER WILL BE UPDATED IN 5 MINUTES - PLEASE DISCONNECT\n'
                 done
                 echo "-------- Waiting 5m -----------"
-                sleep 5m
+                #sleep 5m
                 #Disconnect
                 echo "-------- Kick Users -----------"
                 for i in "${!SERVER[@]}"
@@ -249,9 +265,10 @@ update(){
                         sleep 2
                         echo "Shutting Down ${SERVER[$i]}"
                         screen -S $NAME -X stuff 'stop\n'
+                        PID=$(getPID $NAME)
+                        tail --pid=$PID -f /dev/null
+                        echo "${SERVER[$i]} STOPPED"
                 done
-                echo "-------- Waiting 30s ----------"
-                sleep 30
                 #Update and Start
                 echo "-------- Downloading Update ---"
                 for i in "${!SERVER[@]}"
@@ -262,10 +279,18 @@ update(){
                         wgetLink $FULL_DIR
                         sleep 20
                         echo "Start ${SERVER[$i]}"
-                        screen -S $NAME -X stuff 'java -jar '$FULL_DIR'\n'
+                        screen -S $NAME -X stuff 'cd '$DIR'\n'
+                        screen -S $NAME -X stuff 'java -jar '$FULL'\n'
                 done
                 updateConf "CURRENT_BUILD" $LATEST_BUILD
         fi
+}
+
+test(){
+        local BUILD_NAME=$(buildName)
+        echo $BUILD_NAME
+
+        getPID "survival"
 }
 
 version(){
