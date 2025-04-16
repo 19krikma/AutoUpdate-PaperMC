@@ -16,6 +16,11 @@ get_opts()
                 download
                 exit
                 ;;
+            -e|--stop)
+                shift
+                stop
+                shift
+                ;;
             -h|--help)
                 help
                 exit
@@ -27,11 +32,6 @@ get_opts()
             -l|--launch)
                 shift
                 start
-                shift
-                ;;
-            -s|--stop)
-                shift
-                stop
                 shift
                 ;;
             -u|--update)
@@ -209,9 +209,10 @@ help(){
         echo "Help. List of available options."
         echo " -c,--check    Check what is the latest default/experimental version available"
         echo " -d,--download Donwload Latest Build to Server folder or local"
+        echo " -e,--stop     Stop server and terminate screen session"
         echo " -h,--help     List all commands and provide information regarding the commands or script in general"
-        echo " -u,--update   Checks for latest Build and Updates Servers if update is availabel"
         echo " -l,--start    Start's screen session and launches PaperMC server"
+        echo " -u,--update   Checks for latest Build and Updates Servers if update is availabel"
         echo " -v,--version  Current Version of the script"
 }
 
@@ -223,20 +224,31 @@ info(){
 
 start(){
         local BUILD_NAME=$(buildName)
+        echo "-------- Starting Servers -----"
         for i in "${!SERVER[@]}"
         do
-                echo "-------- Starting Servers -----"
                 NAME="${SERVER[$i]}"
                 DIR="${SERVER_DIR[$i]}"
                 FULL="$NAME-$PROJECT-$MINECRAFT_VERSION-$CURRENT_BUILD.jar"
                 screen -dmS $NAME
                 screen -S $NAME -X stuff 'cd '$DIR'\n'
                 screen -S $NAME -X stuff 'java -jar '$FULL'\n'
+                echo "$NAME Started"
         done
 }
 
 stop(){
-        echo "Stop"
+        local BUILD_NAME=$(buildName)
+        echo "-------- Stopping Servers -----"
+        for i in "${!SERVER[@]}"
+        do
+                NAME="${SERVER[$i]}"
+                screen -S $NAME -X stuff 'stop\n'
+                PID=$(getPID $NAME)
+                tail --pid=$PID -f /dev/null
+                screen -S $NAME -X stuff 'exit\n'
+                echo "$NAME Stopped"
+        done
 }
 
 update(){
