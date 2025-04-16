@@ -211,6 +211,7 @@ help(){
         echo " -d,--download Donwload Latest Build to Server folder or local"
         echo " -h,--help     List all commands and provide information regarding the commands or script in general"
         echo " -u,--update   Checks for latest Build and Updates Servers if update is availabel"
+        echo " -l,--start    Start's screen session and launches PaperMC server"
         echo " -v,--version  Current Version of the script"
 }
 
@@ -254,7 +255,7 @@ update(){
                         screen -S $NAME -X stuff 'say SERVER WILL BE UPDATED IN 5 MINUTES - PLEASE DISCONNECT\n'
                 done
                 echo "-------- Waiting 5m -----------"
-                #sleep 5m
+                sleep 5m
                 #Disconnect
                 echo "-------- Kick Users -----------"
                 for i in "${!SERVER[@]}"
