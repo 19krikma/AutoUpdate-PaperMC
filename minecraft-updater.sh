@@ -29,7 +29,7 @@ get_opts()
                 info
                 exit
                 ;;
-            -l|--launch)
+            -l|--start)
                 shift
                 start
                 shift
@@ -300,10 +300,7 @@ update(){
 }
 
 test(){
-        local BUILD_NAME=$(buildName)
-        echo $BUILD_NAME
-
-        getPID "survival"
+        echo "test"
 }
 
 version(){
