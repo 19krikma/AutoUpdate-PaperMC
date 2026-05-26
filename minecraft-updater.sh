@@ -1,5 +1,5 @@
 #!/usr/bin/env sh
-VERSION="0.2"
+VERSION="0.3"
 source config.ini
 
 get_opts()
