@@ -52,7 +52,7 @@ get_opts()
 # Seprete Functions  -----------------
 
 buildName(){
-        a=$(curl -s https://api.papermc.io/v2/projects/${PROJECT}/versions/${MINECRAFT_VERSION}/builds | \
+        a=$(curl -s https://fill.papermc.io/v3/projects/${PROJECT}/versions/${MINECRAFT_VERSION}/builds | \
                 jq '.builds | map(select(.channel == "'${TYPE}'") | .downloads | .application | .name) |.[-1]')
         b=${a#'"'}
         BUILD_NAME=${b%'"'}
@@ -65,7 +65,7 @@ getPID(){
 }
 
 getCheckSum(){
-        a=$(curl -s https://api.papermc.io/v2/projects/${PROJECT}/versions/${MINECRAFT_VERSION}/builds | \
+        a=$(curl -s https://fill.papermc.io/v3/projects/${PROJECT}/versions/${MINECRAFT_VERSION}/builds | \
                 jq '.builds | map(select(.channel == "'${TYPE}'") | .downloads | .application | .sha256) |.[-1]')
         b=${a#'"'}
         BUILD_SHA256=${b%'"'}
@@ -73,7 +73,7 @@ getCheckSum(){
 }
 
 buildCheck(){
-        BUILD=$(curl -s https://api.papermc.io/v2/projects/${PROJECT}/versions/${MINECRAFT_VERSION}/builds | \
+        BUILD=$(curl -s https://fill.papermc.io/v3/projects/${PROJECT}/versions/${MINECRAFT_VERSION}/builds | \
                 jq '.builds | map(select(.channel == "'$1'") | .build) |.[-1]')
         echo $BUILD
 }
@@ -99,7 +99,7 @@ checkSHA256(){
 
 wgetLink(){
         local BUILD_NAME=$(buildName)
-        LINK="https://api.papermc.io/v2/projects/${PROJECT}/versions/${MINECRAFT_VERSION}/builds/$LATEST_BUILD/downloads/$BUILD_NAME"
+        LINK="https://fill.papermc.io/v3/projects/${PROJECT}/versions/${MINECRAFT_VERSION}/builds/$LATEST_BUILD/downloads/$BUILD_NAME"
         SHA256_RESULT=""
         (if [ $1 != "null" ]; then
                 wget -O $1 $LINK
