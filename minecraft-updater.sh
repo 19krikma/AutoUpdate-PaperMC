@@ -2,6 +2,8 @@
 VERSION="0.3"
 source config.ini
 
+USER_AGENT="PaperMC-Manager/$VERSION (https://github.com/19krikma/PaperMC-Manager)"
+
 get_opts()
 {
     while [[ $# -gt 0 ]]
