@@ -124,18 +124,7 @@ wgetLink(){
                 fi
         fi)
 }
-
-upToDate(){
-        #Up to Date True or False
-        if [[ $LATEST_BUILD -eq $CURRENT_BUILD ]]; then
-                return 0
-        else
-                return 1
-        fi
-}
 # ------------------------------------
-
-
 
 check(){
         # Fetch builds
