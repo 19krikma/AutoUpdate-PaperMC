@@ -246,51 +246,46 @@ stop(){
 }
 
 update(){
-        if upToDate; then
-                echo "Up to date."
-                exit
-        else
-                echo "Starting Update Process..."
-                local BUILD_NAME=$(buildName)
-                #Announce the UPDATE
-                echo "-------- Update Notify --------"
-                for i in "${!SERVER[@]}"
-                do
-                        echo "Notified ${SERVER[$i]}"
-                        NAME="${SERVER[$i]}"
-                        screen -S $NAME -X stuff 'say SERVER WILL BE UPDATED IN 5 MINUTES - PLEASE DISCONNECT\n'
-                done
-                echo "-------- Waiting 5m -----------"
-                sleep 5m
-                #Disconnect
-                echo "-------- Kick Users -----------"
-                for i in "${!SERVER[@]}"
-                do
-                        echo "Kicked Users at ${SERVER[$i]}"
-                        NAME="${SERVER[$i]}"
-                        screen -S $NAME -X stuff 'kick @a\n'
-                        sleep 2
-                        echo "Shutting Down ${SERVER[$i]}"
-                        screen -S $NAME -X stuff 'stop\n'
-                        PID=$(getPID $NAME)
-                        tail --pid=$PID -f /dev/null
-                        echo "${SERVER[$i]} STOPPED"
-                done
-                #Update and Start
-                echo "-------- Downloading Update ---"
-                for i in "${!SERVER[@]}"
-                do
-                        NAME="${SERVER[$i]}"
-                        DIR="${SERVER_DIR[$i]}"
-                        FULL_DIR="$DIR$NAME-$BUILD_NAME"
-                        wgetLink $FULL_DIR
-                        sleep 20
-                        echo "Start ${SERVER[$i]}"
-                        screen -S $NAME -X stuff 'cd '$DIR'\n'
-                        screen -S $NAME -X stuff 'java -jar '$FULL'\n'
-                done
-                updateConf "CURRENT_BUILD" $LATEST_BUILD
-        fi
+        echo "Starting Update Process..."
+        local BUILD_NAME=$(buildName)
+        #Announce the UPDATE
+        echo "-------- Update Notify --------"
+        for i in "${!SERVER[@]}"
+        do
+                echo "Notified ${SERVER[$i]}"
+                NAME="${SERVER[$i]}"
+                screen -S $NAME -X stuff 'say SERVER WILL BE UPDATED IN 5 MINUTES - PLEASE DISCONNECT\n'
+        done
+        echo "-------- Waiting 5m -----------"
+        sleep 5m
+        #Disconnect
+        echo "-------- Kick Users -----------"
+        for i in "${!SERVER[@]}"
+        do
+                echo "Kicked Users at ${SERVER[$i]}"
+                NAME="${SERVER[$i]}"
+                screen -S $NAME -X stuff 'kick @a\n'
+                sleep 2
+                echo "Shutting Down ${SERVER[$i]}"
+                screen -S $NAME -X stuff 'stop\n'
+                PID=$(getPID $NAME)
+                tail --pid=$PID -f /dev/null
+                echo "${SERVER[$i]} STOPPED"
+        done
+        #Update and Start
+        echo "-------- Downloading Update ---"
+        for i in "${!SERVER[@]}"
+        do
+                NAME="${SERVER[$i]}"
+                DIR="${SERVER_DIR[$i]}"
+                FULL_DIR="$DIR$NAME-$BUILD_NAME"
+                wgetLink $FULL_DIR
+                sleep 20
+                echo "Start ${SERVER[$i]}"
+                screen -S $NAME -X stuff 'cd '$DIR'\n'
+                screen -S $NAME -X stuff 'java -jar '$FULL'\n'
+        done
+        updateConf "CURRENT_BUILD" $LATEST_BUILD
 }
 
 test(){
