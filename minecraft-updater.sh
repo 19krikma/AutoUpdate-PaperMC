@@ -72,12 +72,6 @@ getCheckSum(){
         echo $BUILD_SHA256
 }
 
-buildCheck(){
-        BUILD=$(curl -s https://fill.papermc.io/v3/projects/${PROJECT}/versions/${MINECRAFT_VERSION}/builds | \
-                jq '.builds | map(select(.channel == "'$1'") | .build) |.[-1]')
-        echo $BUILD
-}
-
 updateConf(){
         sed -i "s/^\($1=\).*/\1$2/" config.ini
 }
