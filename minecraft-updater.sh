@@ -138,59 +138,70 @@ upToDate(){
 
 
 check(){
-        #Check if Default is Available
-        default="default"
-        experimental="experimental"
-        BUILD_CHECK_DEF=$(buildCheck $default)
-        BUILD_CHECK_EXP=$(buildCheck $experimental)
-        (if [ $TYPE == "default" ] && [ $BUILD_CHECK_DEF != "null" ]; then
-                echo "Released 'Stable' $MINECRAFT_VERSION Build# $BUILD_CHECK_DEF"
-                echo "Running 'Stable' $MINECRAFT_VERSION Build# $CURRENT_BUILD"
-                updateConf "LATEST_BUILD" $BUILD_CHECK_DEF
-                TEMP_BUILD=$BUILD_CHECK_DEF
-                exit
-        elif [ $TYPE == "default" ] && [ $BUILD_CHECK_DEF == "null" ]; then
-                read -p "Didn't find Stable Version! Do you want to check 'experimental'? [yes | no] :" -r switch
-                if [ $switch == "yes" ]; then
-                        if [ $BUILD_CHECK_EXP != "null" ]; then
-                                read -p "Found 'experimental'. Want to switch? [yes | no] :" -r switch2
-                                if [ $switch2 == "yes" ]; then
-                                        updateConf "TYPE" $experimental
-                                        updateConf "LATEST_BUILD" $BUILD_CHECK_EXP
-                                        TEMP_BUILD=$BUILD_CHECK_EXP
-                                        echo "Switched to 'experimental'"
-                                        exit
-                                else
-                                        exit
-                                fi
-                        elif [ $BUILD_CHECK_EXP == "null" ]; then
-                                echo "Didn't find 'experimental'"
-                                echo "Check what Version you entered"
-                                exit
-                        fi
-                else
-                        exit
-                fi
+        # Fetch builds
+        BUILDS_JSON=$(curl -s -H "User-Agent: $USER_AGENT" \
+          "https://fill.papermc.io/v3/projects/${PROJECT}/versions/${VERSION}/builds")
+        
+        # Extract latest per channel
+        LATEST_ALPHA=$(echo "$BUILDS_JSON" | jq '[.[] | select(.channel=="ALPHA")] | first | .id')
+        LATEST_BETA=$(echo  "$BUILDS_JSON" | jq '[.[] | select(.channel=="BETA")]  | first | .id')
+        LATEST_STABLE=$(echo "$BUILDS_JSON" | jq '[.[] | select(.channel=="STABLE")]| first | .id')
+        
+        echo "Current: $CURRENT_CHANNEL build $CURRENT_BUILD"
+        echo "Latest:  alpha=$LATEST_ALPHA beta=$LATEST_BETA stable=$LATEST_STABLE"
 
-        elif [ $TYPE == "experimental" ] && [ $BUILD_CHECK_DEF != "null" ]; then
-                read -p "Found Stable Version! Do you want to switch? [yes | no] :" -r switch
-                if [ $switch == "yes" ]; then
-                        updateConf "TYPE" $default
-                        updateConf "LATEST_BUILD" $BUILD_CHECK_DEF
-                        TEMP_BUILD=$BUILD_CHECK_DEF
-                        echo "Switched to 'stable'"
-                else
-                        exit
-                fi
-
-        elif [ $TYPE == "experimental" ] && [ $BUILD_CHECK_EXP != "null" ]; then
-                echo "Released 'Experimental' $MINECRAFT_VERSION Build# $BUILD_CHECK_EXP"
-                echo "Running 'Experimental' $MINECRAFT_VERSION Build# $CURRENT_BUILD"
-                updateConf "LATEST_BUILD" $BUILD_CHECK_EXP
-                TEMP_BUILD=$BUILD_CHECK_EXP
-                exit
-        fi)
-
+        # ---------------------------
+        # DETERMINE BEST CHANNEL
+        # ---------------------------
+        
+        target_channel=""
+        target_build=""
+        
+        if [[ "$LATEST_STABLE" != "null" ]]; then
+            target_channel="STABLE"
+            target_build="$LATEST_STABLE"
+        
+        elif [[ "$LATEST_BETA" != "null" ]]; then
+            target_channel="BETA"
+            target_build="$LATEST_BETA"
+        
+        elif [[ "$LATEST_ALPHA" != "null" ]]; then
+            target_channel="ALPHA"
+            target_build="$LATEST_ALPHA"
+        fi
+        
+        # ---------------------------
+        # DECIDE UPGRADE
+        # ---------------------------
+        
+        upgrade_available=false
+        
+        if [[ -n "$target_build" && "$target_build" != "null" ]]; then
+            if [[ "$CURRENT_BUILD" -lt "$target_build" ]]; then
+                upgrade_available=true
+            fi
+        fi
+        
+        # ---------------------------
+        # OUTPUT / ACTION
+        # ---------------------------
+        
+        echo "Current: $CURRENT_CHANNEL build $CURRENT_BUILD"
+        echo "Best available: $target_channel build $target_build"
+        
+        if [[ "$upgrade_available" == true ]]; then
+            if [[ "$AUTO_UPGRADE" == "true" ]]; then
+                echo "Auto-upgrading → $target_channel build $target_build"
+                # perform update
+            else
+                echo "Upgrade available → $target_channel build $target_build"
+                echo "Proceed? (y/n)"
+                read -r ans
+                [[ "$ans" == "y" ]] && echo "Updating..."
+            fi
+        else
+            echo "✅ Already up to date"
+        fi
 }
 
 download(){
